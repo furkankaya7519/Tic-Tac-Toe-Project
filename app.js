@@ -5,13 +5,40 @@ const waterParagraph = document.querySelector(".row").querySelectorAll(".col-5")
 const infoParagraph = document.querySelector("#infoParagraph");
 const boxButtonsArray = document.querySelectorAll(".btn-outline-primary");
 
-startButton.addEventListener("click",deneme);
 
-function deneme(){
-   // waterParagraph.innerHTML = "🔥 1";
-   //infoParagraph.innerHTML = "Fur";
+setTheGame();
 
-//    for (const i of boxButtonsArray) {
-//        i.style.backgroundColor = "red";
-//    }
+function setTheGame(){
+
+    openOrCloseBoxButton(false);
+    addElementsListener();
+}
+
+
+function openOrCloseBoxButton(b){
+
+    for (const box of boxButtonsArray) {
+        box.disabled = !b;
+    }
+    
+}
+
+
+function addElementsListener(){
+    startButton.addEventListener("click",startButtonClick);
+    for (const box in boxButtonsArray) {
+        boxButtonsArray[box].addEventListener("click",function(){
+            boxButtonClick(box);
+        });
+    }
+}
+
+function startButtonClick(){
+    this.disabled = true;
+    this.style.display = "none";
+    openOrCloseBoxButton(true);
+}
+
+function boxButtonClick(index){
+    console.log(index);
 }
