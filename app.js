@@ -4,193 +4,117 @@ const fireParagraph = document.querySelector(".row").querySelectorAll(".col-5")[
 const waterParagraph = document.querySelector(".row").querySelectorAll(".col-5")[1].querySelector("p");
 const infoParagraph = document.querySelector("#infoParagraph");
 const boxButtonsArray = document.querySelectorAll(".btn-outline-primary");
-let numberOfFullBox = 0;
-let gameFinished = false;
-let isReset = false;
-let lastFilledBox = [];
+const delay = ms => new Promise(res => setTimeout(res, ms));
+let WhoPlay;
+let numberOfMoves = 0;
+let whoWin;
+let winnerBoxList = [];
 
 
-setTheGame();
-
-
-
-function setTheGame() {
-    addElementsListener();
-    openOrCloseBoxButtons(false);
+if(localStorage.getItem("numberOfFireWin") === null){
+    localStorage.setItem("numberOfFireWin",0);
 }
 
+if(localStorage.getItem("numberOfWaterWin") === null){
+    localStorage.setItem("numberOfWaterWin",0);
+}
+
+fireParagraph.innerHTML = "🔥 " + localStorage.getItem("numberOfFireWin");
+waterParagraph.innerHTML = "💧 " + localStorage.getItem("numberOfWaterWin");
 
 
+openOrCloseBoxButtons(false);
 
-function addElementsListener() {
-    startButton.addEventListener('click', startButtonListener);
-
-    for (const box of boxButtonsArray) {
+startButton.addEventListener('click', startButtonListener);
+for (const box of boxButtonsArray) {
         box.addEventListener("click", boxButtonListener);
     }
-    
-    
-}
-
 
 function startButtonListener() {
     startButton.style.display = "none";
-    startGame();
+    infoParagraph.textContent = "🔥 GOOD LUCK 💧";
+    if(rN = Math.floor(Math.random() * 2) === 0){
+        WhoPlay = 0;
+    }
+    else{
+        WhoPlay = 1;
+    }
+    runTheGame();
 }
 
-function boxButtonListener() {
-    if (numberOfFullBox == 9) { return; }
+async function boxButtonListener() {
     
-    let ind;
-
-    for (const key in boxButtonsArray) {
-        if(this === boxButtonsArray[key]){
-            ind = key;
-            break;
-        }
-    }
-
-    lastFilledBox[0] = ind;
-    lastFilledBox[1] = "O";
 
     if (this.querySelector("h1").textContent === "") {
         this.querySelector("h1").textContent = "O";
-
-        numberOfFullBox++;
-        checkAnyOneWin("O");
-        if(gameFinished){return};
-        if(gameFinished || isReset){
-            isReset = false;
-            return;
-        }
-
-        if(numberOfFullBox === 9){
-            endTheGame("N");
-            return;
-        }
-    
-        makeMove();
+        await delay(100);
+        numberOfMoves++;
+        WhoPlay = 0;
+        runTheGame();
     }
 
 }
-    
 
-function checkAnyOneWin(l) {
+async function runTheGame(){
 
-    let isAnyOneWin = false;
-    if (boxButtonsArray[0].querySelector("h1").textContent + boxButtonsArray[1].querySelector("h1").textContent + boxButtonsArray[2].querySelector("h1").textContent === l + l + l) {
-        isAnyOneWin = true;
-    }
-    else if (boxButtonsArray[3].querySelector("h1").textContent + boxButtonsArray[4].querySelector("h1").textContent + boxButtonsArray[5].querySelector("h1").textContent === l + l + l) {
-        isAnyOneWin = true;
-    }
-    else if (boxButtonsArray[6].querySelector("h1").textContent + boxButtonsArray[7].querySelector("h1").textContent + boxButtonsArray[8].querySelector("h1").textContent === l + l + l) {
-        isAnyOneWin = true;
-    }
-    else if (boxButtonsArray[0].querySelector("h1").textContent + boxButtonsArray[3].querySelector("h1").textContent + boxButtonsArray[6].querySelector("h1").textContent === l + l + l) {
-        isAnyOneWin = true;
-    }
-    else if (boxButtonsArray[1].querySelector("h1").textContent + boxButtonsArray[4].querySelector("h1").textContent + boxButtonsArray[7].querySelector("h1").textContent === l + l + l) {
-        isAnyOneWin = true;
-    }
-    else if (boxButtonsArray[2].querySelector("h1").textContent + boxButtonsArray[5].querySelector("h1").textContent + boxButtonsArray[8].querySelector("h1").textContent === l + l + l) {
-        isAnyOneWin = true;
-    }
-    else if (boxButtonsArray[0].querySelector("h1").textContent + boxButtonsArray[4].querySelector("h1").textContent + boxButtonsArray[8].querySelector("h1").textContent === l + l + l) {
-        isAnyOneWin = true;
-    }
-    else if (boxButtonsArray[2].querySelector("h1").textContent + boxButtonsArray[4].querySelector("h1").textContent + boxButtonsArray[6].querySelector("h1").textContent === l + l + l) {
-        isAnyOneWin = true;
-    }
+    let controlLetter;
 
-    if(isAnyOneWin){
-        gameFinished = true;
-        endTheGame(l);
-    }
-}
-
-function wait(ms){
-    var start = new Date().getTime();
-    var end = start;
-    while(end < start + ms) {
-      end = new Date().getTime();
-   }
- }
-
-function endTheGame(l){
-    
-    if(l === "X"){
-        infoParagraph.textContent = "Winner is 🔥 ";
-        boxButtonsArray[lastFilledBox[0]] = "X";
-    }
-    else if ( l === "O"){
-        infoParagraph.textContent = "Winner is 💧";
-        boxButtonsArray[lastFilledBox[0]] = "O";
+    if(WhoPlay === 0){
+        controlLetter = "O";
+        whoWin = 1;
     }
     else{
-        infoParagraph.textContent = "No one win the game";
+        controlLetter = "X";
+        whoWin = 0;
     }
 
+    if(checkAnyOneWin(controlLetter)){
+        openOrCloseBoxButtons(false);
+        
+        if(whoWin == 0){
+            infoParagraph.innerHTML = "The winner is 🔥";
+            localStorage.setItem("numberOfFireWin",parseInt(localStorage.getItem("numberOfFireWin"))+1);
+        }
+        else{
+            infoParagraph.innerHTML = "The winner is 💧";
+            localStorage.setItem("numberOfWaterWin",parseInt(localStorage.getItem("numberOfWaterWin"))+1);
+        }
 
+        for (const wb of winnerBoxList) {
+            boxButtonsArray[wb].style.backgroundColor = "blue";
+            await delay(500);
+        }
 
-    wait(2000);
-
-    
-    //resetTheGame();
-    location.reload();
-    
-}
-
-
-function resetTheGame(){
-    startButton.style.display = "inline";
-    numberOfFullBox = 0;
-    gameFinished = false;
-    for (const box of boxButtonsArray) {
-        box.disabled = true;
-        box.querySelector("h1").textContent = "";
-    }
-    isReset = true;
-}
-
-function openOrCloseBoxButtons(b) {
-    for (const box of boxButtonsArray) {
-        box.disabled = !b;
-    }
-}
-
-
-function startGame() {
-    infoParagraph.textContent = "💧";
-    setTheStarter();
-}
-
-
-function setTheStarter() {
-    let rN;
-    rN = Math.floor(Math.random() * 2);
-
-    if (rN == 0) {
-        makeMove();
-        openOrCloseBoxButtons(true);
-    }
-    else {
-        openOrCloseBoxButtons(true);
-    }
-}
-
-
-function makeMove() {
-
-    if(gameFinished){
+        await delay(4000);
+        location.reload();
         return;
     }
-    let rN;
+
+    if(numberOfMoves == 9){
+        infoParagraph.innerHTML = "The winners are 🔥 💧";
+        openOrCloseBoxButtons(false);
+        await delay(5000);
+        location.reload();
+        return;
+    }
+
+    if(WhoPlay === 0){
+        makeMove();
+    }
+    else{
+        openOrCloseBoxButtons(true);
+    }
+    
+}
+
+
+
+
+async function makeMove() {
 
     while (true) {
 
-        if (numberOfFullBox == 9) { return; }
-
+        let rN;
         if(checkComputerWin()){break;}
         if(checkOrecaution()){break;}
         
@@ -201,17 +125,12 @@ function makeMove() {
             break;
         }
     }
-    numberOfFullBox++;
-    checkAnyOneWin("X");
-
-    if(numberOfFullBox === 9){
-        endTheGame("N");
-        return;
-    }
-
+    
+    await delay(100);
+    numberOfMoves++;
+    WhoPlay = 1;
+    runTheGame();
 }
-
-
 
 function checkComputerWin(){
 
@@ -446,6 +365,65 @@ function checkOrecaution(){
         }
     }
 }
+
+function checkAnyOneWin(l) {
+
+ 
+    if (boxButtonsArray[0].querySelector("h1").textContent + boxButtonsArray[1].querySelector("h1").textContent + boxButtonsArray[2].querySelector("h1").textContent === l + l + l) {
+        winnerBoxList[0] = 0;
+        winnerBoxList[1] = 1;
+        winnerBoxList[2] = 2;
+    }
+    else if (boxButtonsArray[3].querySelector("h1").textContent + boxButtonsArray[4].querySelector("h1").textContent + boxButtonsArray[5].querySelector("h1").textContent === l + l + l) {
+        winnerBoxList[0] = 3;
+        winnerBoxList[1] = 4;
+        winnerBoxList[2] = 5;
+    }
+    else if (boxButtonsArray[6].querySelector("h1").textContent + boxButtonsArray[7].querySelector("h1").textContent + boxButtonsArray[8].querySelector("h1").textContent === l + l + l) {
+        winnerBoxList[0] = 6;
+        winnerBoxList[1] = 7;
+        winnerBoxList[2] = 8;
+    }
+    else if (boxButtonsArray[0].querySelector("h1").textContent + boxButtonsArray[3].querySelector("h1").textContent + boxButtonsArray[6].querySelector("h1").textContent === l + l + l) {
+        winnerBoxList[0] = 0;
+        winnerBoxList[1] = 3;
+        winnerBoxList[2] = 6;
+    }
+    else if (boxButtonsArray[1].querySelector("h1").textContent + boxButtonsArray[4].querySelector("h1").textContent + boxButtonsArray[7].querySelector("h1").textContent === l + l + l) {
+        winnerBoxList[0] = 1;
+        winnerBoxList[1] = 4;
+        winnerBoxList[2] = 7;
+    }
+    else if (boxButtonsArray[2].querySelector("h1").textContent + boxButtonsArray[5].querySelector("h1").textContent + boxButtonsArray[8].querySelector("h1").textContent === l + l + l) {
+        winnerBoxList[0] = 2;
+        winnerBoxList[1] = 5;
+        winnerBoxList[2] = 8;
+    }
+    else if (boxButtonsArray[0].querySelector("h1").textContent + boxButtonsArray[4].querySelector("h1").textContent + boxButtonsArray[8].querySelector("h1").textContent === l + l + l) {
+        winnerBoxList[0] = 0;
+        winnerBoxList[1] = 4;
+        winnerBoxList[2] = 8;
+    }
+    else if (boxButtonsArray[2].querySelector("h1").textContent + boxButtonsArray[4].querySelector("h1").textContent + boxButtonsArray[6].querySelector("h1").textContent === l + l + l) {
+        winnerBoxList[0] = 2;
+        winnerBoxList[1] = 4;
+        winnerBoxList[2] = 6;
+    }
+
+    if(winnerBoxList.length != 0){
+        return true;
+    }
+
+    return false;
+}
+
+function openOrCloseBoxButtons(b) {
+    for (const box of boxButtonsArray) {
+        box.disabled = !b;
+    }
+}
+
+
 
 
 
